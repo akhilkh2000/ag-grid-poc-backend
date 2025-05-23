@@ -24,7 +24,7 @@ public class TradeController {
     private final Random random = new Random();
     private final List<Trade> allTrades = new ArrayList<>();
 
-    private static final int MAX_ROWS = 50000;
+    private static final int MAX_ROWS = 100000;
 
     private boolean initialSent = false;
 
