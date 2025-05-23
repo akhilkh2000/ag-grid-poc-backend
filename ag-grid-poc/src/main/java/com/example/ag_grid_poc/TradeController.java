@@ -24,7 +24,7 @@ public class TradeController {
     private final Random random = new Random();
     private final List<Trade> allTrades = new ArrayList<>();
 
-    private static final int MAX_ROWS = 1000000;
+    private static final int MAX_ROWS = 50000;
 
     private boolean initialSent = false;
 
@@ -56,7 +56,21 @@ public class TradeController {
 
     @Scheduled(fixedRate = 1000)
     public void sendTrades() {
-        if (!initialSent || allTrades.size() >= MAX_ROWS) return;
+        if (WebSocketEventListener.connectedClients.get() == 0) return;
+
+        if (!initialSent) {
+            List<Trade> initialTrades = new ArrayList<>();
+            for (int i = 0; i < 10000; i++) {
+                Trade t = Trade.generateRandom();
+                allTrades.add(t);
+                initialTrades.add(t);
+            }
+            template.convertAndSend("/topic/trades", initialTrades);
+            logger.info("Sent initial 10000 trades");
+            initialSent = true;
+        }
+
+        if (allTrades.size() >= MAX_ROWS) return;
 
         List<Trade> newTrades = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
@@ -67,4 +81,5 @@ public class TradeController {
         template.convertAndSend("/topic/trades", newTrades);
         logger.info("Sent additional 1000 trades, total: {}", allTrades.size());
     }
+
 }
